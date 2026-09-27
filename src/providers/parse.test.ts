@@ -636,14 +636,14 @@ describe("parseOpenCodeGoUsage", () => {
 
     expect(windows[0]).toMatchObject({
       provider: "opencode-go",
-      label: "5h Rolling",
+      label: "5h",
       usedPercent: 35,
       windowSeconds: 5 * 60 * 60,
     });
 
     expect(windows[1]).toMatchObject({
       provider: "opencode-go",
-      label: "Weekly",
+      label: "7d",
       usedPercent: 62,
       windowSeconds: 7 * 24 * 60 * 60,
       showPace: true,
@@ -651,7 +651,7 @@ describe("parseOpenCodeGoUsage", () => {
 
     expect(windows[2]).toMatchObject({
       provider: "opencode-go",
-      label: "Monthly",
+      label: "30d",
       usedPercent: 28,
       windowSeconds: 30 * 24 * 60 * 60,
       showPace: true,
@@ -669,7 +669,7 @@ describe("parseOpenCodeGoUsage", () => {
     });
 
     expect(windows).toHaveLength(1);
-    expect(windows[0].label).toBe("5h Rolling");
+    expect(windows[0].label).toBe("5h");
   });
 
   it("returns empty for no data", () => {

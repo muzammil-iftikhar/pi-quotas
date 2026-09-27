@@ -532,7 +532,7 @@ export function parseOpenCodeGoUsage(data: {
   if (data.rolling) {
     windows.push({
       provider: "opencode-go",
-      label: "5h Rolling",
+      label: "5h",
       usedPercent: data.rolling.usagePercent,
       resetsAt: new Date(data.rolling.resetTimeIso),
       windowSeconds: 5 * 60 * 60,
@@ -546,7 +546,7 @@ export function parseOpenCodeGoUsage(data: {
   if (data.weekly) {
     windows.push({
       provider: "opencode-go",
-      label: "Weekly",
+      label: "7d",
       usedPercent: data.weekly.usagePercent,
       resetsAt: new Date(data.weekly.resetTimeIso),
       windowSeconds: 7 * 24 * 60 * 60,
@@ -561,7 +561,7 @@ export function parseOpenCodeGoUsage(data: {
   if (data.monthly) {
     windows.push({
       provider: "opencode-go",
-      label: "Monthly",
+      label: "30d",
       usedPercent: data.monthly.usagePercent,
       resetsAt: new Date(data.monthly.resetTimeIso),
       windowSeconds: 30 * 24 * 60 * 60,

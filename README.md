@@ -86,7 +86,7 @@ Settings can be saved globally (`~/.pi/agent/extensions/quotas.json`) or per-pro
 | Synthetic      | Subscription, search/hour, free tools, weekly tokens, 5h limit | Request counts and token budgets; rolling five-hour rate limit; weekly token regen                  |
 | Grok           | Weekly credits, per-product usage, on-demand spend              | SuperGrok credit usage from the xAI CLI billing endpoint                                             |
 | Z.ai           | 5h, 7d, monthly web searches                                  | Token utilisation percentages (rolling 5h/7d windows); monthly web-search count limit               |
-| OpenCode Go    | Rolling 5h, weekly, monthly                                   | Usage percentages and reset times from the OpenCode Go usage API; cross-session token/cost aggregation via the `/tokens` command |
+| OpenCode Go    | 5h, 7d, 30d                                                   | Usage percentages and reset times from the OpenCode Go usage API; cross-session token/cost aggregation via the `/tokens` command |
 | Kimi Code      | Rolling 5h, weekly                                           | Coding Plan request allowances with reset times                                                        |
 | Ollama Cloud   | 5h, 7d                                                       | Rolling session (5h) and weekly (7d) usage fractions from the `/api/usage` endpoint                  |
 

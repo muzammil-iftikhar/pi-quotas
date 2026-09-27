@@ -537,7 +537,7 @@ describe("fetchOpenCodeGoQuotas", () => {
       expect(result.data.provider).toBe("opencode-go");
       expect(result.data.windows).toHaveLength(3);
       expect(result.data.windows[1]).toMatchObject({
-        label: "Weekly",
+        label: "7d",
         usedPercent: 40,
       });
     }
