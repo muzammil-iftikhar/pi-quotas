@@ -20,7 +20,6 @@
       "./src/extensions/command-quotas/index.ts",
       "./src/extensions/command-tokens/index.ts",
       "./src/extensions/usage-status/index.ts",
-      "./src/extensions/token-status/index.ts",
       "./src/extensions/quota-warnings/index.ts"
     ],
     "image": "https://raw.githubusercontent.com/latentminds-ai/pi-quotas/main/docs/quotas-dashboard.png"
