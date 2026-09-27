@@ -441,8 +441,7 @@ export function parseSyntheticUsage(data: any): QuotaWindow[] {
       usedValue: limitValue - remainingValue,
       limitValue,
       isCurrency: true,
-      showPace: true,
-      paceScale: 1 / 7,
+      showPace: false,
       nextAmount: `+${data.weeklyTokenLimit.nextRegenCredits}`,
       nextLabel: "Next regen",
     });

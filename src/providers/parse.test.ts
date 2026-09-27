@@ -524,7 +524,8 @@ describe("parseSyntheticUsage", () => {
     expect(credits!.isCurrency).toBe(true);
     expect(credits!.limitValue).toBe(24);
     expect(credits!.usedValue).toBeCloseTo(0.87, 1);
-    expect(credits!.paceScale).toBe(1 / 7);
+    expect(credits!.showPace).toBe(false);
+    expect(credits!.paceScale).toBeUndefined();
     expect(credits!.nextAmount).toBe("+$0.48");
 
     // rollingFiveHourLimit: (500-420)/500 = 16%
@@ -546,6 +547,28 @@ describe("parseSyntheticUsage", () => {
     expect(
       windows.find((w) => w.label === "Free Tool Calls / day"),
     ).toBeUndefined();
+  });
+
+  it("does not inflate severity for the weekly credit window", () => {
+    // Regression: windowSeconds is 1 day while nextRegenAt is a weekly regen, so
+    // a regen further than a day away made getPacePercent clamp to 0 and the
+    // projection explode — 40% used was reported as "critical".
+    const windows = parseSyntheticUsage({
+      weeklyTokenLimit: {
+        nextRegenAt: new Date(
+          Date.now() + 5 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+        percentRemaining: 60,
+        maxCredits: "$50.00",
+        remainingCredits: "$30.00",
+        nextRegenCredits: "$0.48",
+      },
+    });
+
+    const credits = windows.find((w) => w.label === "Credits / week")!;
+    expect(credits.usedPercent).toBeCloseTo(40, 1);
+    expect(credits.showPace).toBe(false);
+    expect(assessWindow(credits).severity).toBe("none");
   });
 
   it("shows freeToolCalls when limit > 0", () => {
