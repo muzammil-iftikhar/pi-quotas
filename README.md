@@ -63,10 +63,6 @@ The combined dashboard hides providers with no configured subscription, credenti
 
 When your active model is from a supported provider, the Pi footer shows real-time quota headroom - updated every 60 seconds and on each turn. Colours shift from green → amber → red as usage climbs.
 
-### Quota warnings
-
-Automatic notifications when projected usage is on track to exceed limits before the window resets. Warnings escalate from `warning` → `high` → `critical` based on your consumption pace.
-
 ### Per-feature toggles
 
 Use `/quotas:settings` to enable or disable:
@@ -74,7 +70,6 @@ Use `/quotas:settings` to enable or disable:
 - Combined `/quotas` command
 - Per-provider commands (`/anthropic:quotas`, `/codex:quotas`, `/github:quotas`, `/openrouter:quotas`, `/synthetic:quotas`, `/grok:quotas`, `/zai:quotas`, `/opencode-go:quotas`, `/kimi:quotas`, `/ollama:quotas`)
 - Footer status widget
-- Quota warning notifications
 - **Defer to Synthetic** — when both pi-quotas and [pi-synthetic](https://www.npmjs.com/package/@aliou/pi-synthetic) are loaded, pi-quotas hides its own Synthetic footer to avoid showing duplicate quota information. Enabled by default; disable if you prefer to see both footers.
 
 Settings can be saved globally (`~/.pi/agent/extensions/quotas.json`) or per-project (`.pi/quotas.json`). Run `/reload` after changing command visibility.

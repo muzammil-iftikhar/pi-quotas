@@ -14,7 +14,6 @@ vi.mock("../../config.js", () => ({
       quotasCommand: true,
       providerCommands: true,
       usageStatus: true,
-      quotaWarnings: true,
       deferToSynthetic: true,
     })),
   },

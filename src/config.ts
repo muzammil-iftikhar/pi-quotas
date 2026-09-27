@@ -9,7 +9,6 @@ export type QuotasFeatureId =
   | "quotasCommand"
   | "providerCommands"
   | "usageStatus"
-  | "quotaWarnings"
   | "deferToSynthetic";
 
 export const QUOTAS_EXTENSIONS_REQUEST_EVENT =
@@ -27,7 +26,6 @@ export interface QuotasConfig {
   quotasCommand?: boolean;
   providerCommands?: boolean;
   usageStatus?: boolean;
-  quotaWarnings?: boolean;
   /** When true and pi-synthetic's usage footer is active, hide pi-quotas' Synthetic footer. */
   deferToSynthetic?: boolean;
 }
@@ -37,7 +35,6 @@ export interface ResolvedQuotasConfig {
   quotasCommand: boolean;
   providerCommands: boolean;
   usageStatus: boolean;
-  quotaWarnings: boolean;
   deferToSynthetic: boolean;
 }
 
@@ -46,7 +43,6 @@ const DEFAULT_CONFIG: ResolvedQuotasConfig = {
   quotasCommand: true,
   providerCommands: true,
   usageStatus: true,
-  quotaWarnings: true,
   deferToSynthetic: true,
 };
 
@@ -83,7 +79,6 @@ class QuotasConfigStore {
       providerCommands:
         input?.providerCommands ?? DEFAULT_CONFIG.providerCommands,
       usageStatus: input?.usageStatus ?? DEFAULT_CONFIG.usageStatus,
-      quotaWarnings: input?.quotaWarnings ?? DEFAULT_CONFIG.quotaWarnings,
       deferToSynthetic:
         input?.deferToSynthetic ?? DEFAULT_CONFIG.deferToSynthetic,
     };
@@ -171,11 +166,6 @@ const FEATURE_META: Array<{
     id: "usageStatus",
     label: "Usage status",
     description: "Toggle footer quota status for the active provider",
-  },
-  {
-    id: "quotaWarnings",
-    label: "Quota warnings",
-    description: "Toggle projected-usage warning notifications",
   },
   {
     id: "deferToSynthetic",
