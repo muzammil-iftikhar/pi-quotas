@@ -348,7 +348,7 @@ describe("parseOpenRouterUsage", () => {
       },
     });
 
-    // When limit is set, we get: Monthly Budget + Daily + Weekly + Monthly = 4 windows
+    // When limit is set, we get: Monthly Budget + Daily + 7d + 30d = 4 windows
     expect(windows).toHaveLength(4);
 
     // Monthly Budget window
@@ -364,10 +364,10 @@ describe("parseOpenRouterUsage", () => {
       showPace: true,
     });
 
-    // Daily, Weekly, Monthly usage windows
+    // Daily, 7d, 30d usage windows
     expect(windows.find((w) => w.label === "Daily")).toBeDefined();
-    expect(windows.find((w) => w.label === "Weekly")).toBeDefined();
-    expect(windows.find((w) => w.label === "Monthly")).toBeDefined();
+    expect(windows.find((w) => w.label === "7d")).toBeDefined();
+    expect(windows.find((w) => w.label === "30d")).toBeDefined();
   });
 
   it("maps unlimited key with remaining credits", () => {
@@ -393,7 +393,7 @@ describe("parseOpenRouterUsage", () => {
       },
     });
 
-    // When unlimited with limit_remaining: Credits Remaining + Daily + Weekly + Monthly = 4 windows
+    // When unlimited with limit_remaining: Credits Remaining + Daily + 7d + 30d = 4 windows
     expect(windows).toHaveLength(4);
 
     // Credits Remaining window
@@ -472,8 +472,8 @@ describe("parseOpenRouterUsage", () => {
 
     // But should still have usage tracking windows
     expect(windows.find((w) => w.label === "Daily")).toBeDefined();
-    expect(windows.find((w) => w.label === "Weekly")).toBeDefined();
-    expect(windows.find((w) => w.label === "Monthly")).toBeDefined();
+    expect(windows.find((w) => w.label === "7d")).toBeDefined();
+    expect(windows.find((w) => w.label === "30d")).toBeDefined();
   });
 });
 
@@ -712,7 +712,7 @@ describe("parseKimiCodingUsage", () => {
     });
     expect(windows[1]).toMatchObject({
       provider: "kimi-coding",
-      label: "Weekly",
+      label: "7d",
       usedPercent: 20,
       usedValue: 20,
       limitValue: 100,

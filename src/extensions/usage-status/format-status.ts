@@ -35,8 +35,6 @@ const SHORT_LABELS: Record<string, string> = {
   "Monthly Budget": "budget",
   "Credits Remaining": "credits",
   "Daily": "daily",
-  "Weekly": "weekly",
-  "Monthly": "monthly",
   // Synthetic labels (match pi-synthetic extension)
   "Credits / week": "week",
   "Requests / 5h": "5h",

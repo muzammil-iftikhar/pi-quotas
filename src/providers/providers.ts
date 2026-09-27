@@ -391,7 +391,7 @@ export function parseOpenRouterUsage(data: any): QuotaWindow[] {
   // Weekly usage window (tracking only)
   windows.push({
     provider: "openrouter",
-    label: "Weekly",
+    label: "7d",
     usedPercent: 0,
     resetsAt: calculateNextMondayUTC(),
     windowSeconds: 7 * 24 * 60 * 60,
@@ -405,7 +405,7 @@ export function parseOpenRouterUsage(data: any): QuotaWindow[] {
   // Monthly usage window (tracking only)
   windows.push({
     provider: "openrouter",
-    label: "Monthly",
+    label: "30d",
     usedPercent: 0,
     resetsAt: calculateNextMonthStartUTC(),
     windowSeconds: 30 * 24 * 60 * 60,
@@ -588,7 +588,7 @@ export function parseKimiCodingUsage(data: any): QuotaWindow[] {
     if (Number.isFinite(limit) && Number.isFinite(used) && limit > 0) {
       windows.push({
         provider: "kimi-coding",
-        label: "Weekly",
+        label: "7d",
         usedPercent: safePercent(used, limit),
         resetsAt: parseDateish(weekly.resetTime),
         windowSeconds: 7 * 24 * 60 * 60,
