@@ -552,8 +552,7 @@ export function parseOpenCodeGoUsage(data: {
       windowSeconds: 7 * 24 * 60 * 60,
       usedValue: data.weekly.usagePercent,
       limitValue: 100,
-      showPace: true,
-      paceScale: 1 / 7,
+      showPace: false,
       nextLabel: "Resets",
     });
   }
@@ -567,8 +566,7 @@ export function parseOpenCodeGoUsage(data: {
       windowSeconds: 30 * 24 * 60 * 60,
       usedValue: data.monthly.usagePercent,
       limitValue: 100,
-      showPace: true,
-      paceScale: 1,
+      showPace: false,
       nextLabel: "Resets",
     });
   }

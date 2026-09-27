@@ -9,6 +9,7 @@ import { parseSyntheticUsage } from "./providers.js";
 import { parseXaiUsage } from "./providers.js";
 import { parseZaiUsage } from "./providers.js";
 import { parseOpenCodeGoUsage } from "./providers.js";
+import { assessWindow } from "../utils/quotas-severity.js";
 
 describe("parseAnthropicUsage", () => {
   it("maps oauth usage response into quota windows", () => {
@@ -646,7 +647,7 @@ describe("parseOpenCodeGoUsage", () => {
       label: "7d",
       usedPercent: 62,
       windowSeconds: 7 * 24 * 60 * 60,
-      showPace: true,
+      showPace: false,
     });
 
     expect(windows[2]).toMatchObject({
@@ -654,7 +655,7 @@ describe("parseOpenCodeGoUsage", () => {
       label: "30d",
       usedPercent: 28,
       windowSeconds: 30 * 24 * 60 * 60,
-      showPace: true,
+      showPace: false,
     });
   });
 
@@ -670,6 +671,41 @@ describe("parseOpenCodeGoUsage", () => {
 
     expect(windows).toHaveLength(1);
     expect(windows[0].label).toBe("5h");
+  });
+
+  it("applies one absolute severity rule to all three windows", () => {
+    const windows = parseOpenCodeGoUsage({
+      rolling: {
+        usagePercent: 41,
+        resetInSec: 10200,
+        percentRemaining: 59,
+        resetTimeIso: "2026-05-18T22:00:00Z",
+      },
+      weekly: {
+        usagePercent: 41,
+        resetInSec: 36000,
+        percentRemaining: 59,
+        resetTimeIso: "2026-05-25T00:00:00Z",
+      },
+      monthly: {
+        usagePercent: 41,
+        resetInSec: 1200000,
+        percentRemaining: 59,
+        resetTimeIso: "2026-06-01T00:00:00Z",
+      },
+    });
+
+    // No window opts into pace projection, so severity depends only on
+    // usedPercent and cannot diverge between 5h, 7d and 30d.
+    expect(windows.map((w) => w.showPace)).toEqual([false, false, false]);
+
+    // Regression: 7d reported "high" from a paceScale of 1/7 even with 94% of
+    // the week elapsed and only 41% used. Equal usage must yield equal severity.
+    expect(windows.map((w) => assessWindow(w).severity)).toEqual([
+      "none",
+      "none",
+      "none",
+    ]);
   });
 
   it("returns empty for no data", () => {
