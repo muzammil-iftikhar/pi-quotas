@@ -133,8 +133,8 @@ describe("formatWindowStatus", () => {
 
       const result = formatStatus({ ui: { theme } } as any, [status]);
 
-      expect(result).toContain("(↺in 2h 19m)");
-      expect(result).not.toContain("(↺in 3h)");
+      expect(result).toContain("(↺ in 2h 19m)");
+      expect(result).not.toContain("(↺ in 3h)");
     }
   });
 
@@ -242,7 +242,7 @@ describe("formatWindowStatus", () => {
       ],
     );
 
-    expect(result).toContain("(↺now)");
-    expect(result).not.toContain("(↺in now)");
+    expect(result).toContain("(↺ now)");
+    expect(result).not.toContain("(↺ in now)");
   });
 });

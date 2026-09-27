@@ -55,7 +55,7 @@ export function formatStatus(ctx: Pick<ExtensionContext, "ui">, windows: WindowS
   return windows
     .map((w) => {
       const core = formatWindowStatus(theme, w);
-      const reset = w.resetsAt ? theme.fg("dim", ` (↺${formatFooterResetTime(w.resetsAt)})`) : "";
+      const reset = w.resetsAt ? theme.fg("dim", ` (↺ ${formatFooterResetTime(w.resetsAt)})`) : "";
       return `${core}${reset}`;
     })
     .join(" ");
