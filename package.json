@@ -12,7 +12,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/latentminds-ai/pi-quotas"
+    "url": "https://github.com/muzammil-iftikhar/pi-quotas"
   },
   "pi": {
     "extensions": [
@@ -21,7 +21,7 @@
       "./src/extensions/command-tokens/index.ts",
       "./src/extensions/usage-status/index.ts"
     ],
-    "image": "https://raw.githubusercontent.com/latentminds-ai/pi-quotas/main/docs/quotas-dashboard.png"
+    "image": "https://raw.githubusercontent.com/muzammil-iftikhar/pi-quotas/main/docs/quotas-dashboard.png"
   },
   "files": [
     "src",
