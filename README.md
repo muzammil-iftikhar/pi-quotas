@@ -2,6 +2,86 @@
 
 Quota monitoring for Pi. Shows remaining usage and rate limits for Anthropic, OpenAI Codex, GitHub Copilot, OpenRouter, Synthetic, Grok, Z.ai, OpenCode Go, Kimi Code, and Ollama Cloud — directly in your Pi session.
 
+> **This is a fork.** The original project is
+> [**latentminds-ai/pi-quotas**](https://github.com/latentminds-ai/pi-quotas) — follow it for all the
+> details: provider coverage, credential setup, and upstream release history. Everything in this
+> README describes upstream behaviour except where the section below says otherwise.
+>
+> The npm package `@latentminds/pi-quotas` is the **upstream** package, not this fork. To install
+> this fork instead:
+>
+> ```bash
+> pi install git:github.com/muzammil-iftikhar/pi-quotas
+> ```
+
+## What's different in this fork
+
+Seven commits on top of upstream `cbbb388` (package version 0.5.0): **+296 / −752 lines** across 18
+files. Everything else behaves as upstream.
+
+### OpenCode Go reads the usage API instead of scraping the dashboard
+
+Upstream scraped the SolidJS SSR payload from `https://opencode.ai/workspace/<id>/go`, which needed
+two credentials Pi does not manage — a workspace id and an `auth` session cookie — supplied through
+`OPENCODE_GO_WORKSPACE_ID` + `OPENCODE_GO_AUTH_COOKIE` or a config file at
+`~/.config/opencode/opencode-quota/opencode-go.json`. When any of that was missing, expired, or the
+dashboard markup changed, the footer showed only `usage unavailable`.
+
+This fork calls a JSON endpoint instead:
+
+```
+GET https://opencode.ai/zen/go/v1/usage
+Authorization: Bearer <opencode-go api key>
+
+{"usage":{
+  "rolling":{"status":"ok","percent":0, "resetsAt":"<iso>"},
+  "weekly": {"status":"ok","percent":40,"resetsAt":"<iso>"},
+  "monthly":{"status":"ok","percent":20,"resetsAt":"<iso>"}}}}
+```
+
+It authenticates with the provider API key Pi already stores in `~/.pi/agent/auth.json` for model
+calls, so **no cookie, workspace id, or config file is required**. `src/providers/opencode-go-config.ts`
+(127 lines) and the six scrape regexes are gone.
+
+### Window labels are `5h` / `7d` / `30d`
+
+Compact duration form, with no `rolling` prefix:
+
+| Provider    | Upstream                          | This fork      |
+| ----------- | --------------------------------- | -------------- |
+| OpenCode Go | `5h Rolling`, `Weekly`, `Monthly` | `5h`, `7d`, `30d` |
+| OpenRouter  | `Weekly`, `Monthly`               | `7d`, `30d`    |
+| Kimi Code   | `Weekly`                          | `7d`           |
+
+Compound labels are deliberately **unchanged**, because they name a different concept — and renaming
+the budget one would give OpenRouter two `30d` windows: `Monthly Budget` (renders as `budget`),
+`Credits / week` (Synthetic), `Web / month` (Z.ai), and Grok's `Week/Month (credits)`.
+
+### Removed the token-status footer widget
+
+Upstream added a second footer badge for `opencode-go*` models showing
+`5h:$0.04 · wk:$0.07 · mo:$0.24` — your local session spend compared against hardcoded, guessed tier
+limits (`GO_LIMITS = { rolling5h: 12, weekly: 30, monthly: 60 }`, commented "approximate, from
+docs"). With the usage API reporting real utilisation that badge is redundant and contradictory: it
+rendered `$0.04 spent` next to `100% left`.
+
+`src/extensions/token-status/` and the `tokenStatus` setting are gone. The `/tokens` command still
+works — it is a separate extension (`command-tokens`) that reads no configuration at all, despite
+upstream's settings label claiming that toggle covered both.
+
+### Removed quota warning notifications
+
+`src/extensions/quota-warnings/` is gone, along with the `quotaWarnings` setting.
+
+### Footer reset-time spacing
+
+Renders `(↺ in 2h 19m)` instead of upstream's run-together `(↺in 2h 19m)`.
+
+### Removed settings keys
+
+`tokenStatus` and `quotaWarnings` no longer exist. An existing `quotas.json` containing them still
+loads — the keys are simply ignored. The package loads 4 extensions instead of 6.
+
 ## Screenshots
 
 
