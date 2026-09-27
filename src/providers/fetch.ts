@@ -16,7 +16,6 @@ import {
   parseZaiUsage,
   parseOpenCodeGoUsage,
 } from "./providers.js";
-import { resolveOpenCodeGoConfigCached } from "./opencode-go-config.js";
 import { queryOpenCodeGoQuota } from "./opencode-go.js";
 
 const FETCH_TIMEOUT_MS = 15_000;
@@ -417,32 +416,13 @@ export async function fetchSyntheticQuotas(
 }
 
 export async function fetchOpenCodeGoQuotas(
-  _authStorage: AuthStorage,
+  authStorage: AuthStorage,
   signal?: AbortSignal,
 ): Promise<QuotasResult> {
-  const configResult = await resolveOpenCodeGoConfigCached();
-  if (configResult.state === "none") {
-    return failure(
-      "No OpenCode Go config. Set OPENCODE_GO_WORKSPACE_ID +" +
-        " OPENCODE_GO_AUTH_COOKIE, or create" +
-        " ~/.config/opencode/opencode-quota/opencode-go.json",
-      "config",
-    );
-  }
-  if (configResult.state === "incomplete") {
-    return failure(
-      `OpenCode Go config incomplete: missing ${configResult.missing}`,
-      "config",
-    );
-  }
-  if (configResult.state === "invalid") {
-    return failure(
-      `OpenCode Go config invalid: ${configResult.error}`,
-      "config",
-    );
-  }
+  const apiKey = await providerAccessToken(authStorage, "opencode-go");
+  if (!apiKey) return failure("No OpenCode Go API key found", "config");
 
-  const result = await queryOpenCodeGoQuota(configResult.config, signal);
+  const result = await queryOpenCodeGoQuota(apiKey, signal);
   if (!result.success) return failure(result.error, "http");
   return success("opencode-go", parseOpenCodeGoUsage(result));
 }

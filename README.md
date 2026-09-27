@@ -107,7 +107,7 @@ pi-quotas reads existing Pi auth entries from `~/.pi/agent/auth.json`:
 - `synthetic` — Synthetic API key (set the `SYNTHETIC_API_KEY` environment variable)
 - `xai` — Grok/xAI OAuth access token
 - `zai` — Z.ai (Zhipu AI / GLM Coding Plan) API key
-- `opencode-go` — OpenCode Go workspace ID and auth cookie (set the `OPENCODE_GO_WORKSPACE_ID` and `OPENCODE_GO_AUTH_COOKIE` environment variables, or configure them in the OpenCode Go config file)
+- `opencode-go` — OpenCode Go API key. Pi already stores this in `~/.pi/agent/auth.json` for model calls, so no extra setup is required. No dashboard cookie or workspace id is needed.
 - `kimi-coding` — Kimi Code OAuth access token
 - `ollama-cloud` — Ollama Cloud API key (also reads `OLLAMA_API_KEY` if set)
 
