@@ -183,6 +183,22 @@ describe("formatWindowStatus", () => {
     }
   });
 
+  it("hides the OK Codex spend cap but preserves a reached-cap warning and Go windows", () => {
+    const base = {
+      usedPercent: 0, resetsAt: new Date(0), windowSeconds: 0,
+      usedValue: 0, limitValue: 1,
+    };
+    const windows = toStatusWindows([
+      { ...base, provider: "openai-codex", label: "Spend cap", limited: false },
+      { ...base, provider: "openai-codex", label: "Spend cap", limited: true },
+      { ...base, provider: "opencode-go", label: "5h" },
+    ]);
+    expect(windows.map((w) => w.label)).toEqual(["Spend cap", "5h"]);
+    const status = formatStatus({ ui: { theme } } as any, windows);
+    expect(status).not.toContain("cap:OK");
+    expect(status).toContain("REACHED");
+  });
+
   it("clears the footer status when filtering removes all windows", () => {
     expect(formatStatusForFooter({ ui: { theme } } as any, [])).toBeUndefined();
   });

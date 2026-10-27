@@ -70,6 +70,7 @@ const ANTHROPIC_SUBSCRIPTION_WINDOW_LABELS = new Set([
 ]);
 
 function shouldShowInStatus(window: QuotaWindow): boolean {
+  if (window.provider === "openai-codex" && window.label === "Spend cap" && !window.limited) return false;
   return !(
     window.provider === "anthropic" &&
     ANTHROPIC_SUBSCRIPTION_WINDOW_LABELS.has(window.label)
