@@ -8,6 +8,12 @@ Quota monitoring for Pi. Shows remaining usage and rate limits for Anthropic, Op
 
 ## What's different in this fork
 
+- **OpenAI subscription footer** uses the separately saved `openai-codex` login when the active
+  provider is `openai` with stored OAuth credentials. Sign in to both providers with the **same
+  ChatGPT account**; account association cannot be verified automatically. The footer is labelled
+  `ChatGPT/Codex` because it shows account quota, not a model-specific allowance. API-key sessions
+  are excluded. OpenCode Go and quota commands are unchanged.
+
 - **OpenCode Go reads the usage API** (`https://opencode.ai/zen/go/v1/usage`) using the API key Pi
   already stores, instead of scraping the dashboard with a workspace id and session cookie. No
   `OPENCODE_GO_WORKSPACE_ID` / `OPENCODE_GO_AUTH_COOKIE` or config file needed.

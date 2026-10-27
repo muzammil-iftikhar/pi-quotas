@@ -20,7 +20,8 @@ vi.mock("../../config.js", () => ({
 }));
 
 vi.mock("../../lib/quotas.js", () => ({
-  isSupportedProvider: (provider: string | undefined) => provider === "anthropic",
+  isSupportedProvider: (provider: string | undefined) =>
+    ["anthropic", "openai-codex", "opencode-go"].includes(provider ?? ""),
   fetchProviderQuotas: vi.fn(async () => ({
     success: true,
     data: { provider: "anthropic", windows: [] },
@@ -74,7 +75,7 @@ function createFakePi() {
   };
 }
 
-function createContext(provider: string) {
+function createContext(provider: string, credentialType?: "oauth" | "api_key") {
   let stale = false;
   const setStatus = vi.fn(() => {
     if (stale) throw new Error(STALE_CONTEXT_ERROR);
@@ -89,7 +90,11 @@ function createContext(provider: string) {
       if (stale) throw new Error(STALE_CONTEXT_ERROR);
       return { provider };
     },
-    modelRegistry: { authStorage: {} },
+    modelRegistry: { authStorage: {
+      get: vi.fn((name: string) => name === "openai" && credentialType
+        ? { type: credentialType }
+        : undefined),
+    } },
     ui: {
       theme: { fg: (_color: string, text: string) => text },
       setStatus,
@@ -108,6 +113,105 @@ function createContext(provider: string) {
 afterEach(() => {
   vi.useRealTimers();
   vi.clearAllMocks();
+});
+
+function quotaResult(provider: "openai-codex" | "opencode-go") {
+  return {
+    success: true as const,
+    data: {
+      provider,
+      fetchedAt: new Date(),
+      windows: [{
+        provider, label: "5h", usedPercent: 25,
+        resetsAt: new Date(0), windowSeconds: 18_000,
+        usedValue: 25, limitValue: 100,
+      }],
+    },
+  };
+}
+
+describe("OpenAI subscription footer routing", () => {
+  it("uses Codex credentials and labels account quota for OpenAI OAuth", async () => {
+    vi.useFakeTimers();
+    vi.mocked(fetchProviderQuotas).mockResolvedValueOnce(quotaResult("openai-codex"));
+    const { pi, emitExtensionEvent } = createFakePi();
+    const { ctx, setStatus } = createContext("openai", "oauth");
+    await usageStatusExtension(pi);
+    await emitExtensionEvent("session_start", ctx);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetchProviderQuotas).toHaveBeenCalledWith(ctx.modelRegistry.authStorage, "openai-codex");
+    expect(setStatus).toHaveBeenLastCalledWith("pi-quotas-usage", expect.stringMatching(/^ChatGPT\/Codex /));
+    await emitExtensionEvent("session_shutdown", ctx);
+  });
+
+  it.each(["api_key", undefined] as const)("does not route OpenAI %s credentials, even on interval refresh", async (type) => {
+    vi.useFakeTimers();
+    const { pi, emitExtensionEvent } = createFakePi();
+    const { ctx, setStatus } = createContext("openai", type);
+    await usageStatusExtension(pi);
+    await emitExtensionEvent("session_start", ctx);
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(fetchProviderQuotas).not.toHaveBeenCalled();
+    expect(setStatus).toHaveBeenLastCalledWith("pi-quotas-usage", undefined);
+    await emitExtensionEvent("session_shutdown", ctx);
+  });
+
+  it("reports missing Codex credentials without falling back to another provider", async () => {
+    vi.useFakeTimers();
+    vi.mocked(fetchProviderQuotas).mockResolvedValueOnce({
+      success: false, error: { kind: "config", message: "No Codex access token found" },
+    });
+    const { pi, emitExtensionEvent } = createFakePi();
+    const { ctx, setStatus } = createContext("openai", "oauth");
+    await usageStatusExtension(pi);
+    await emitExtensionEvent("session_start", ctx);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetchProviderQuotas).toHaveBeenCalledTimes(1);
+    expect(setStatus).toHaveBeenLastCalledWith("pi-quotas-usage", "usage unavailable");
+    await emitExtensionEvent("session_shutdown", ctx);
+  });
+
+  it("keeps OpenCode Go routing and footer unchanged after switching from OpenAI", async () => {
+    vi.useFakeTimers();
+    vi.mocked(fetchProviderQuotas)
+      .mockResolvedValueOnce(quotaResult("openai-codex"))
+      .mockResolvedValueOnce(quotaResult("opencode-go"));
+    const { pi, emitExtensionEvent } = createFakePi();
+    const openai = createContext("openai", "oauth");
+    const go = createContext("opencode-go");
+    await usageStatusExtension(pi);
+    await emitExtensionEvent("session_start", openai.ctx);
+    await vi.advanceTimersByTimeAsync(0);
+    await emitExtensionEvent("model_select", go.ctx);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetchProviderQuotas).toHaveBeenLastCalledWith(go.ctx.modelRegistry.authStorage, "opencode-go");
+    const status = go.setStatus.mock.lastCall as unknown as [string, string];
+    expect(status[1]).toContain("5h");
+    expect(status[1]).not.toContain("ChatGPT/Codex");
+    await emitExtensionEvent("session_shutdown", go.ctx);
+  });
+
+  it("discards an in-flight Codex response after switching to OpenCode Go", async () => {
+    vi.useFakeTimers();
+    let resolve!: (result: ReturnType<typeof quotaResult>) => void;
+    vi.mocked(fetchProviderQuotas)
+      .mockImplementationOnce(() => new Promise((done) => { resolve = done; }))
+      .mockResolvedValueOnce(quotaResult("opencode-go"));
+    const { pi, emitExtensionEvent } = createFakePi();
+    const openai = createContext("openai", "oauth");
+    const go = createContext("opencode-go");
+    await usageStatusExtension(pi);
+    await emitExtensionEvent("session_start", openai.ctx);
+    await emitExtensionEvent("model_select", go.ctx);
+    resolve(quotaResult("openai-codex"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(openai.setStatus).not.toHaveBeenCalled();
+    expect(fetchProviderQuotas).toHaveBeenLastCalledWith(go.ctx.modelRegistry.authStorage, "opencode-go");
+    const status = go.setStatus.mock.lastCall as unknown as [string, string];
+    expect(status[1]).toContain("5h");
+    expect(status[1]).not.toContain("ChatGPT/Codex");
+    await emitExtensionEvent("session_shutdown", go.ctx);
+  });
 });
 
 describe("usage-status extension lifecycle", () => {

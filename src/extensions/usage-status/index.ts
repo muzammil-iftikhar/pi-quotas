@@ -146,9 +146,9 @@ function createStatusRefresher() {
     inFlight = true;
     try {
       if (requestGeneration !== generation || activeContext !== ctx) return;
-      if (!ctx.hasUI || !activeProvider || !isSupportedProvider(activeProvider)) return;
-
-      const provider = activeProvider;
+      if (!ctx.hasUI || !activeProvider) return;
+      const provider = activeProvider === "openai" ? "openai-codex" : activeProvider;
+      if (!isSupportedProvider(provider)) return;
       const result = await fetchProviderQuotas(quotaAuthStorage(ctx.modelRegistry), provider);
       if (requestGeneration !== generation || activeContext !== ctx) return;
 
@@ -166,7 +166,7 @@ function createStatusRefresher() {
       const windows: WindowStatus[] = toStatusWindows(result.data.windows);
       const status = formatStatusForFooter(ctx, windows);
       lastStatus = status === undefined ? undefined : windows;
-      setStatusSafely(ctx, status);
+      setStatusSafely(ctx, status && activeProvider === "openai" ? `ChatGPT/Codex ${status}` : status);
     } catch (error) {
       if (isStaleContextError(error)) {
         if (activeContext === ctx) deactivate();
@@ -188,7 +188,11 @@ function createStatusRefresher() {
       activeProvider = getContextProvider(ctx);
       generation++;
       const requestGeneration = generation;
-      if (!activeProvider || !isSupportedProvider(activeProvider)) {
+      // Token-sharing OAuth has no usage endpoint; use the user's same-account Codex login.
+      const openaiSubscription = activeProvider === "openai" &&
+        quotaAuthStorage(ctx.modelRegistry).get("openai")?.type === "oauth";
+      if (!activeProvider || (!openaiSubscription && !isSupportedProvider(activeProvider))) {
+        activeProvider = undefined;
         setStatusSafely(ctx, undefined);
         return;
       }
@@ -207,7 +211,10 @@ function createStatusRefresher() {
     },
     renderLast(ctx: ExtensionContext): boolean {
       if (!lastStatus) return false;
-      return setStatusSafely(ctx, (ctx) => formatStatusForFooter(ctx, lastStatus ?? []));
+      return setStatusSafely(ctx, (ctx) => {
+        const status = formatStatusForFooter(ctx, lastStatus ?? []);
+        return status && activeProvider === "openai" ? `ChatGPT/Codex ${status}` : status;
+      });
     },
   };
 }
